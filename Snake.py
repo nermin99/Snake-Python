@@ -1,22 +1,22 @@
-from config import *
+from config import SQUARE_SIZE
 
 
 class Snake:
-    x = None
-    y = None
-    dx = None
-    dy = None
-    color = None
     snakebits = []
 
     def __init__(self, dx, dy, color, xPos, yPos, length):
+        self.x = xPos
+        self.y = yPos
         self.dx = dx
         self.dy = dy
-        self.x = xPos,
-        self.y = yPos,
         self.color = color
-        for x in range(xPos, xPos + length, SQUARE_SIZE):
-            self.snakebits.append(SnakeBit(x, yPos))
+        self.start_length = length
+
+        self.spawn_tail()
+
+    def spawn_tail(self):
+        for x in range(self.x, self.x + self.start_length, SQUARE_SIZE):
+            self.snakebits.append(SnakeBit(x, self.y))
 
     # Move by removing the tail and adding a new bit in front of the head
     def move(self, apple_eaten):

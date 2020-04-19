@@ -6,14 +6,15 @@ SQUARE_SIZE = 20
 GAME_SPEED = 15
 
 # snake
-START_POS_X = 20
-START_POS_Y = 20
+START_POS_X = 100
+START_POS_Y = 120
 START_DX = 1
 START_DY = 0
-START_LENGTH = 4
+START_LENGTH = 3
 
 COLOR = {
     'RED': (255, 0, 0),
     'GREEN': (0, 255, 0),
-    'BLACK': (0, 0, 0)
+    'BLACK': (0, 0, 0),
+    'WHITE': (255, 255, 255)
 }

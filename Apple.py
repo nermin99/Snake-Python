@@ -1,5 +1,5 @@
 import random
-from config import *
+from config import WINDOW_WIDTH, WINDOW_HEIGHT, SQUARE_SIZE
 
 
 class Apple:
