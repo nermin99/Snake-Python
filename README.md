@@ -2,6 +2,10 @@
 
 ![Snake Game](snake.png)
 
+## Installation
+
+Install pygame and pylint
+
 ## Start
 
 ```
