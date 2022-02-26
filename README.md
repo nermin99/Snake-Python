@@ -4,7 +4,9 @@
 
 ## Installation
 
-Install pygame and pylint
+```
+python -m pip install -r requirements.txt
+```
 
 ## Start
 
