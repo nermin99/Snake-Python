@@ -1,6 +1,6 @@
 # PythonSnake
 
-![Snake Game](snake.png)
+![Snake Game](game_snake.png)
 
 ## Installation
 
