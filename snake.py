@@ -1,20 +1,21 @@
+import math
 import random
 import itertools
 import pygame
 
 NR_COLS = 10
 NR_ROWS = 9
-TILE_SIZE = 50
+TILE_SIZE = 55
 WINDOW_WIDTH = TILE_SIZE * NR_COLS
 WINDOW_HEIGHT = TILE_SIZE * NR_ROWS
-GAME_SPEED = 8
+GAME_SPEED = 7
 
 # snake
-START_POS_X = 100
-START_POS_Y = 120
+START_LENGTH = 3
+START_POS_X = START_LENGTH - 1
+START_POS_Y = math.floor(NR_ROWS / 2)
 START_DX = 1
 START_DY = 0
-START_LENGTH = 3
 
 COLOR = {
     'RED': (255, 0, 0),
@@ -30,6 +31,13 @@ window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 pygame.display.set_caption('Snake')
 
 clock = pygame.time.Clock()
+
+def coord_to_px(coord):
+    x_pos, y_pos = coord
+    x_px = round(x_pos * WINDOW_WIDTH / NR_COLS)
+    y_px = round(y_pos * WINDOW_HEIGHT / NR_ROWS)
+    return (x_px, y_px)
+
 
 class Apple:
     def __init__(self, color):
@@ -78,7 +86,8 @@ class Snake:
 
 class Game:
     def __init__(self):
-        self.snake = Snake(START_POS_X, START_POS_Y, START_DX, START_DY,
+        start_x, start_y = coord_to_px([START_POS_X, START_POS_Y])
+        self.snake = Snake(start_x, start_y, START_DX, START_DY,
                     START_LENGTH*TILE_SIZE, COLOR['GREEN'])
         self.apple = Apple(COLOR['RED'])
         self.score = 0
@@ -153,8 +162,13 @@ class Game:
         return self.snake.x == self.apple.x and self.snake.y == self.apple.y
 
     def render(self):
-        # background
-        window.fill(COLOR['BLACK'])
+        # background (alternating tile colors)
+        bg_colors = itertools.cycle((COLOR['GREY1'], COLOR['GREY2']))
+        for y in range(0, WINDOW_HEIGHT, TILE_SIZE):
+            for x in range(0, WINDOW_WIDTH, TILE_SIZE):
+                rect = (x, y, TILE_SIZE, TILE_SIZE)
+                pygame.draw.rect(window, next(bg_colors), rect)
+            next(bg_colors)
 
         # apple
         pygame.draw.rect(window, self.apple.color, [
