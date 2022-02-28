@@ -1,7 +1,9 @@
+import os
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = 'hide'
+import pygame
 import math
 import random
 import itertools
-import pygame
 
 NR_COLS = 10
 NR_ROWS = 9
@@ -12,8 +14,8 @@ GAME_SPEED = 7
 
 # snake
 START_LENGTH = 3
-START_X_POS = START_LENGTH - 1
-START_Y_POS = math.floor(NR_ROWS / 2)
+START_HEAD_X = START_LENGTH - 1 # Not px.
+START_HEAD_Y = math.floor(NR_ROWS / 2) # Not px.
 START_DX = 1
 START_DY = 0
 
@@ -21,8 +23,8 @@ COLOR = {
     'WHITE': (255, 255, 255),
     'BLACK': (0, 0, 0),
     'RED': (255, 0, 0),
-    'GREEN1': (0, 255, 0),
-    'GREEN2': (0, 200, 0),
+    'GREEN': (0, 255, 0),
+    'BLUE': (0, 0, 255),
     'GREY1': (120, 120, 120),
     'GREY2': (70, 70, 70)
 }
@@ -48,42 +50,46 @@ class Apple:
 
 
 class SnakeBit:
-    def __init__(self, x, y, color=COLOR['GREEN1'], head=False):
+    def __init__(self, x, y, head=False):
         self.x = x
         self.y = y
-        self.color = color
         self.head = head
 
 
 class Snake:
-    def __init__(self, x, y, dx, dy, length):
-        self.x = x
-        self.y = y
+    def __init__(self, head_x, head_y, dx, dy, length):
+        self.head_x = head_x
+        self.head_y = head_y
         self.dx = dx
         self.dy = dy
         self.start_length = length
         self.snakebits = []
-        self.spawn_tail()
+        self.spawn()
 
-    def spawn_tail(self):
-        for x in range(self.x, self.x + self.start_length, TILE_SIZE):
-            self.snakebits.append(SnakeBit(x, self.y))
+    def spawn(self):
+        self.dx = START_DX
+        self.dy = START_DY
+
+        self.snakebits.append(SnakeBit(to_px(START_HEAD_X), to_px(START_HEAD_Y), head=True))
+        for x_pos in range(START_HEAD_X - 1, -1, -1):
+            self.snakebits.append(SnakeBit(to_px(x_pos), to_px(START_HEAD_Y)))
 
     # Move by removing the tail and adding a new bit in front of the head
     def move(self, should_grow):
         if not should_grow:
             del self.snakebits[-1]
 
+        self.snakebits[0].head = False # previoius head is no longer head
         new_x = self.snakebits[0].x + to_px(self.dx)
         new_y = self.snakebits[0].y + to_px(self.dy)
-        self.snakebits.insert(0, SnakeBit(new_x, new_y))
-        self.x = new_x
-        self.y = new_y
+        self.snakebits.insert(0, SnakeBit(new_x, new_y, head=True))
+        self.head_x = new_x
+        self.head_y = new_y
 
 
 class Game:
     def __init__(self):
-        self.snake = Snake(to_px(START_X_POS), to_px(START_Y_POS), START_DX, START_DY, to_px(START_LENGTH))
+        self.snake = Snake(to_px(START_HEAD_X), to_px(START_HEAD_Y), START_DX, START_DY, to_px(START_LENGTH))
         self.apple = Apple()
         self.score = 0
         self.high_score = 0
@@ -95,7 +101,7 @@ class Game:
 
             if (self.is_tail_eaten()):
                 self.snake.snakebits.clear()
-                self.snake.spawn_tail()
+                self.snake.spawn()
                 self.score = 0
 
             apple_eaten = self.is_apple_eaten()
@@ -148,13 +154,15 @@ class Game:
             self.snake.snakebits[0].y = WINDOW_HEIGHT - TILE_SIZE
 
     def is_tail_eaten(self):
+        head_x, head_y = self.snake.snakebits[0].x, self.snake.snakebits[0].y
         for i in range(4, len(self.snake.snakebits)):
-            if self.snake.x == self.snake.snakebits[i].x and self.snake.y == self.snake.snakebits[i].y:
+            if head_x == self.snake.snakebits[i].x and head_y == self.snake.snakebits[i].y:
                 return True
         return False
 
     def is_apple_eaten(self):
-        return self.snake.x == self.apple.x and self.snake.y == self.apple.y
+        head_x, head_y = self.snake.snakebits[0].x, self.snake.snakebits[0].y
+        return head_x == self.apple.x and head_y == self.apple.y
 
     def render(self):
         # background (alternating tile colors)
@@ -170,9 +178,9 @@ class Game:
                         self.apple.x, self.apple.y, TILE_SIZE, TILE_SIZE])
 
         # snake
-        for i in range(0, len(self.snake.snakebits)):
-            pygame.draw.rect(window, self.snake.snakebits[i].color, [
-                self.snake.snakebits[i].x, self.snake.snakebits[i].y, TILE_SIZE, TILE_SIZE])
+        for snakebit in self.snake.snakebits:
+            pygame.draw.rect(window, COLOR['BLUE'] if snakebit.head else COLOR['GREEN'],
+                [snakebit.x, snakebit.y, TILE_SIZE, TILE_SIZE])
 
         # score
         font = pygame.font.SysFont('Monaco', 42)
