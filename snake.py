@@ -6,8 +6,8 @@ import pygame
 NR_COLS = 10
 NR_ROWS = 9
 TILE_SIZE = 55
-WINDOW_WIDTH = TILE_SIZE * NR_COLS
-WINDOW_HEIGHT = TILE_SIZE * NR_ROWS
+WINDOW_WIDTH = NR_COLS * TILE_SIZE
+WINDOW_HEIGHT = NR_ROWS * TILE_SIZE
 GAME_SPEED = 7
 
 # snake
@@ -33,39 +33,35 @@ pygame.display.set_caption('Snake')
 
 clock = pygame.time.Clock()
 
-def coord_to_px(coord):
-    x_pos, y_pos = coord
-    x = round(x_pos * WINDOW_WIDTH / NR_COLS)
-    y = round(y_pos * WINDOW_HEIGHT / NR_ROWS)
-    return (x, y)
+def to_px(tile_unit):
+    return tile_unit * TILE_SIZE
 
 
 class Apple:
     def __init__(self, color):
         self.color = color
-        self.new_coordinates()
+        self.new_apple()
 
-    def new_coordinates(self):
-        self.x = round(random.randrange(
-            0, WINDOW_WIDTH - TILE_SIZE) / TILE_SIZE) * TILE_SIZE
-        self.y = round(random.randrange(
-            0, WINDOW_HEIGHT - TILE_SIZE) / TILE_SIZE) * TILE_SIZE
+    def new_apple(self):
+        self.x = to_px(random.randint(0,NR_COLS-1))
+        self.y = to_px(random.randint(0,NR_ROWS-1))
 
 
 class SnakeBit:
-    def __init__(self, x, y):
+    def __init__(self, x, y, color=COLOR['GREEN1'], head=False):
         self.x = x
         self.y = y
+        self.color = color
+        self.head = head
 
 
 class Snake:
-    def __init__(self, x, y, dx, dy, length, color):
+    def __init__(self, x, y, dx, dy, length):
         self.x = x
         self.y = y
         self.dx = dx
         self.dy = dy
         self.start_length = length
-        self.color = color
         self.snakebits = []
         self.spawn_tail()
 
@@ -78,8 +74,8 @@ class Snake:
         if not should_grow:
             del self.snakebits[-1]
 
-        new_x = self.snakebits[0].x + self.dx * TILE_SIZE
-        new_y = self.snakebits[0].y + self.dy * TILE_SIZE
+        new_x = self.snakebits[0].x + to_px(self.dx)
+        new_y = self.snakebits[0].y + to_px(self.dy)
         self.snakebits.insert(0, SnakeBit(new_x, new_y))
         self.x = new_x
         self.y = new_y
@@ -87,9 +83,7 @@ class Snake:
 
 class Game:
     def __init__(self):
-        start_x, start_y = coord_to_px([START_X_POS, START_Y_POS])
-        self.snake = Snake(start_x, start_y, START_DX, START_DY,
-                    START_LENGTH*TILE_SIZE, COLOR['GREEN1'])
+        self.snake = Snake(to_px(START_X_POS), to_px(START_Y_POS), START_DX, START_DY, to_px(START_LENGTH))
         self.apple = Apple(COLOR['RED'])
         self.score = 0
         self.high_score = 0
@@ -106,7 +100,7 @@ class Game:
 
             apple_eaten = self.is_apple_eaten()
             if (apple_eaten):
-                self.apple.new_coordinates()
+                self.apple.new_apple()
                 self.score += 1
 
             self.snake.move(apple_eaten)
@@ -177,7 +171,7 @@ class Game:
 
         # snake
         for i in range(0, len(self.snake.snakebits)):
-            pygame.draw.rect(window, self.snake.color, [
+            pygame.draw.rect(window, self.snake.snakebits[i].color, [
                 self.snake.snakebits[i].x, self.snake.snakebits[i].y, TILE_SIZE, TILE_SIZE])
 
         # score
