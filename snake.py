@@ -12,16 +12,17 @@ GAME_SPEED = 7
 
 # snake
 START_LENGTH = 3
-START_POS_X = START_LENGTH - 1
-START_POS_Y = math.floor(NR_ROWS / 2)
+START_X_POS = START_LENGTH - 1
+START_Y_POS = math.floor(NR_ROWS / 2)
 START_DX = 1
 START_DY = 0
 
 COLOR = {
-    'RED': (255, 0, 0),
-    'GREEN': (0, 255, 0),
-    'BLACK': (0, 0, 0),
     'WHITE': (255, 255, 255),
+    'BLACK': (0, 0, 0),
+    'RED': (255, 0, 0),
+    'GREEN1': (0, 255, 0),
+    'GREEN2': (0, 200, 0),
     'GREY1': (120, 120, 120),
     'GREY2': (70, 70, 70)
 }
@@ -34,9 +35,9 @@ clock = pygame.time.Clock()
 
 def coord_to_px(coord):
     x_pos, y_pos = coord
-    x_px = round(x_pos * WINDOW_WIDTH / NR_COLS)
-    y_px = round(y_pos * WINDOW_HEIGHT / NR_ROWS)
-    return (x_px, y_px)
+    x = round(x_pos * WINDOW_WIDTH / NR_COLS)
+    y = round(y_pos * WINDOW_HEIGHT / NR_ROWS)
+    return (x, y)
 
 
 class Apple:
@@ -52,15 +53,15 @@ class Apple:
 
 
 class SnakeBit:
-    def __init__(self, xPos, yPos):
-        self.xPos = xPos
-        self.yPos = yPos
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
 
 
 class Snake:
-    def __init__(self, xPos, yPos, dx, dy, length, color):
-        self.x = xPos
-        self.y = yPos
+    def __init__(self, x, y, dx, dy, length, color):
+        self.x = x
+        self.y = y
         self.dx = dx
         self.dy = dy
         self.start_length = length
@@ -77,18 +78,18 @@ class Snake:
         if not should_grow:
             del self.snakebits[-1]
 
-        newX = self.snakebits[0].xPos + self.dx * TILE_SIZE
-        newY = self.snakebits[0].yPos + self.dy * TILE_SIZE
-        self.snakebits.insert(0, SnakeBit(newX, newY))
-        self.x = newX
-        self.y = newY
+        new_x = self.snakebits[0].x + self.dx * TILE_SIZE
+        new_y = self.snakebits[0].y + self.dy * TILE_SIZE
+        self.snakebits.insert(0, SnakeBit(new_x, new_y))
+        self.x = new_x
+        self.y = new_y
 
 
 class Game:
     def __init__(self):
-        start_x, start_y = coord_to_px([START_POS_X, START_POS_Y])
+        start_x, start_y = coord_to_px([START_X_POS, START_Y_POS])
         self.snake = Snake(start_x, start_y, START_DX, START_DY,
-                    START_LENGTH*TILE_SIZE, COLOR['GREEN'])
+                    START_LENGTH*TILE_SIZE, COLOR['GREEN1'])
         self.apple = Apple(COLOR['RED'])
         self.score = 0
         self.high_score = 0
@@ -143,18 +144,18 @@ class Game:
                         self.snake.dy = 1
 
         # wrap snake on border
-        if (self.snake.snakebits[0].xPos >= WINDOW_WIDTH):
-            self.snake.snakebits[0].xPos = 0
-        if (self.snake.snakebits[0].xPos < 0):
-            self.snake.snakebits[0].xPos = WINDOW_WIDTH - TILE_SIZE
-        if (self.snake.snakebits[0].yPos >= WINDOW_HEIGHT):
-            self.snake.snakebits[0].yPos = 0
-        if (self.snake.snakebits[0].yPos < 0):
-            self.snake.snakebits[0].yPos = WINDOW_HEIGHT - TILE_SIZE
+        if (self.snake.snakebits[0].x >= WINDOW_WIDTH):
+            self.snake.snakebits[0].x = 0
+        if (self.snake.snakebits[0].x < 0):
+            self.snake.snakebits[0].x = WINDOW_WIDTH - TILE_SIZE
+        if (self.snake.snakebits[0].y >= WINDOW_HEIGHT):
+            self.snake.snakebits[0].y = 0
+        if (self.snake.snakebits[0].y < 0):
+            self.snake.snakebits[0].y = WINDOW_HEIGHT - TILE_SIZE
 
     def is_tail_eaten(self):
         for i in range(4, len(self.snake.snakebits)):
-            if self.snake.x == self.snake.snakebits[i].xPos and self.snake.y == self.snake.snakebits[i].yPos:
+            if self.snake.x == self.snake.snakebits[i].x and self.snake.y == self.snake.snakebits[i].y:
                 return True
         return False
 
@@ -177,7 +178,7 @@ class Game:
         # snake
         for i in range(0, len(self.snake.snakebits)):
             pygame.draw.rect(window, self.snake.color, [
-                self.snake.snakebits[i].xPos, self.snake.snakebits[i].yPos, TILE_SIZE, TILE_SIZE])
+                self.snake.snakebits[i].x, self.snake.snakebits[i].y, TILE_SIZE, TILE_SIZE])
 
         # score
         font = pygame.font.SysFont('Monaco', 42)
