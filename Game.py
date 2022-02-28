@@ -1,16 +1,76 @@
 import pygame
 import random
 
-from Snake import Snake
-from Apple import Apple
-from config import *
+WINDOW_WIDTH = 800
+WINDOW_HEIGHT = 600
+
+SQUARE_SIZE = 20
+
+GAME_SPEED = 15
+
+# snake
+START_POS_X = 100
+START_POS_Y = 120
+START_DX = 1
+START_DY = 0
+START_LENGTH = 3
+
+COLOR = {
+    'RED': (255, 0, 0),
+    'GREEN': (0, 255, 0),
+    'BLACK': (0, 0, 0),
+    'WHITE': (255, 255, 255)
+}
 
 pygame.init()
-
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 pygame.display.set_caption('Snake')
 
 clock = pygame.time.Clock()
+
+class Apple:
+    def __init__(self, color):
+        self.color = color
+        self.new_coordinates()
+
+    def new_coordinates(self):
+        self.x = round(random.randrange(
+            0, WINDOW_WIDTH - SQUARE_SIZE) / SQUARE_SIZE) * SQUARE_SIZE
+        self.y = round(random.randrange(
+            0, WINDOW_HEIGHT - SQUARE_SIZE) / SQUARE_SIZE) * SQUARE_SIZE
+
+class SnakeBit:
+    def __init__(self, xPos, yPos):
+        self.xPos = xPos
+        self.yPos = yPos
+
+class Snake:
+    snakebits = []
+
+    def __init__(self, dx, dy, color, xPos, yPos, length):
+        self.x = xPos
+        self.y = yPos
+        self.dx = dx
+        self.dy = dy
+        self.color = color
+        self.start_length = length
+
+        self.spawn_tail()
+
+    def spawn_tail(self):
+        for x in range(self.x, self.x + self.start_length, SQUARE_SIZE):
+            self.snakebits.append(SnakeBit(x, self.y))
+
+    # Move by removing the tail and adding a new bit in front of the head
+    def move(self, apple_eaten):
+        if not apple_eaten:
+            del self.snakebits[-1]
+
+        newX = self.snakebits[0].xPos + self.dx * SQUARE_SIZE
+        newY = self.snakebits[0].yPos + self.dy * SQUARE_SIZE
+        self.snakebits.insert(0, SnakeBit(newX, newY))
+        self.x = newX
+        self.y = newY
 
 snake = Snake(START_DX, START_DY, COLOR['GREEN'], START_POS_X,
               START_POS_Y, START_LENGTH*SQUARE_SIZE)
@@ -19,7 +79,6 @@ apple = Apple(COLOR['RED'])
 
 score, high_score = 0, 0
 game_over = False
-
 
 def game_loop():
     global game_over, score, high_score
