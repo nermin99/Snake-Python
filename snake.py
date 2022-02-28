@@ -1,5 +1,5 @@
-import pygame
 import random
+import pygame
 
 WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 600
@@ -37,14 +37,14 @@ class Apple:
         self.y = round(random.randrange(
             0, WINDOW_HEIGHT - SQUARE_SIZE) / SQUARE_SIZE) * SQUARE_SIZE
 
+
 class SnakeBit:
     def __init__(self, xPos, yPos):
         self.xPos = xPos
         self.yPos = yPos
 
-class Snake:
-    snakebits = []
 
+class Snake:
     def __init__(self, dx, dy, color, xPos, yPos, length):
         self.x = xPos
         self.y = yPos
@@ -52,7 +52,7 @@ class Snake:
         self.dy = dy
         self.color = color
         self.start_length = length
-
+        self.snakebits = []
         self.spawn_tail()
 
     def spawn_tail(self):
@@ -70,115 +70,109 @@ class Snake:
         self.x = newX
         self.y = newY
 
-snake = Snake(START_DX, START_DY, COLOR['GREEN'], START_POS_X,
-              START_POS_Y, START_LENGTH*SQUARE_SIZE)
 
-apple = Apple(COLOR['RED'])
+class Game:
+    def __init__(self):
+        self.snake = Snake(START_DX, START_DY, COLOR['GREEN'], START_POS_X,
+                        START_POS_Y, START_LENGTH*SQUARE_SIZE)
+        self.apple = Apple(COLOR['RED'])
+        self.score = 0
+        self.high_score = 0
+        self.game_over = False
 
-score, high_score = 0, 0
-game_over = False
+    def game_loop(self):
+        while not self.game_over:
+            self.update_direction()
 
-def game_loop():
-    global game_over, score, high_score
+            self.is_tail_eaten()
 
-    while not game_over:
-        update_direction()
+            should_grow = self.is_apple_eaten()
+            self.snake.move(should_grow)
 
-        is_tail_eaten()
+            self.high_score = self.score if self.score > self.high_score else self.high_score
 
-        should_grow = is_apple_eaten()
-        snake.move(should_grow)
+            self.render()
+            pygame.display.update()
+            clock.tick(GAME_SPEED)
 
-        high_score = score if score > high_score else high_score
+        pygame.quit()
+        quit()
 
-        render()
-        pygame.display.update()
-        clock.tick(GAME_SPEED)
+    def update_direction(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.game_over = True
 
-    pygame.quit()
-    quit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:
+                    if self.snake.dx != 1:
+                        self.snake.dx = -1
+                        self.snake.dy = 0
+                elif event.key == pygame.K_UP:
+                    if self.snake.dy != 1:
+                        self.snake.dx = 0
+                        self.snake.dy = -1
+                elif event.key == pygame.K_RIGHT:
+                    if self.snake.dx != -1:
+                        self.snake.dx = 1
+                        self.snake.dy = 0
+                elif event.key == pygame.K_DOWN:
+                    if self.snake.dy != -1:
+                        self.snake.dx = 0
+                        self.snake.dy = 1
 
+        # wrap snake on border
+        if (self.snake.snakebits[0].xPos >= WINDOW_WIDTH):
+            self.snake.snakebits[0].xPos = 0
+        if (self.snake.snakebits[0].xPos < 0):
+            self.snake.snakebits[0].xPos = WINDOW_WIDTH - SQUARE_SIZE
+        if (self.snake.snakebits[0].yPos >= WINDOW_HEIGHT):
+            self.snake.snakebits[0].yPos = 0
+        if (self.snake.snakebits[0].yPos < 0):
+            self.snake.snakebits[0].yPos = WINDOW_HEIGHT - SQUARE_SIZE
 
-def update_direction():
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            global game_over
-            game_over = True
-
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_LEFT:
-                if snake.dx != 1:
-                    snake.dx = -1
-                    snake.dy = 0
-            elif event.key == pygame.K_UP:
-                if snake.dy != 1:
-                    snake.dx = 0
-                    snake.dy = -1
-            elif event.key == pygame.K_RIGHT:
-                if snake.dx != -1:
-                    snake.dx = 1
-                    snake.dy = 0
-            elif event.key == pygame.K_DOWN:
-                if snake.dy != -1:
-                    snake.dx = 0
-                    snake.dy = 1
-
-    # wrap snake on border
-    if (snake.snakebits[0].xPos >= WINDOW_WIDTH):
-        snake.snakebits[0].xPos = 0
-    if (snake.snakebits[0].xPos < 0):
-        snake.snakebits[0].xPos = WINDOW_WIDTH - SQUARE_SIZE
-    if (snake.snakebits[0].yPos >= WINDOW_HEIGHT):
-        snake.snakebits[0].yPos = 0
-    if (snake.snakebits[0].yPos < 0):
-        snake.snakebits[0].yPos = WINDOW_HEIGHT - SQUARE_SIZE
-
-
-def is_tail_eaten():
-    global score
-    for i in range(4, len(snake.snakebits)):
-        if snake.x == snake.snakebits[i].xPos and snake.y == snake.snakebits[i].yPos:
-            snake.snakebits.clear()
-            snake.spawn_tail()
-            score = 0
-            return True
-    return False
-
-
-def is_apple_eaten():
-    global score
-    if snake.x == apple.x and snake.y == apple.y:
-        apple.new_coordinates()
-        score += 1
-        return True
-    else:
+    def is_tail_eaten(self):
+        for i in range(4, len(self.snake.snakebits)):
+            if self.snake.x == self.snake.snakebits[i].xPos and self.snake.y == self.snake.snakebits[i].yPos:
+                self.snake.snakebits.clear()
+                self.snake.spawn_tail()
+                self.score = 0
+                return True
         return False
 
+    def is_apple_eaten(self):
+        if self.snake.x == self.apple.x and self.snake.y == self.apple.y:
+            self.apple.new_coordinates()
+            self.score += 1
+            return True
+        else:
+            return False
 
-def render():
-    # background
-    window.fill(COLOR['BLACK'])
+    def render(self):
+        # background
+        window.fill(COLOR['BLACK'])
 
-    # apple
-    pygame.draw.rect(window, apple.color, [
-                     apple.x, apple.y, SQUARE_SIZE, SQUARE_SIZE])
+        # apple
+        pygame.draw.rect(window, self.apple.color, [
+                        self.apple.x, self.apple.y, SQUARE_SIZE, SQUARE_SIZE])
 
-    # snake
-    for i in range(0, len(snake.snakebits)):
-        pygame.draw.rect(window, snake.color, [
-            snake.snakebits[i].xPos, snake.snakebits[i].yPos, SQUARE_SIZE, SQUARE_SIZE])
+        # snake
+        for i in range(0, len(self.snake.snakebits)):
+            pygame.draw.rect(window, self.snake.color, [
+                self.snake.snakebits[i].xPos, self.snake.snakebits[i].yPos, SQUARE_SIZE, SQUARE_SIZE])
 
-    # score
-    font = pygame.font.SysFont('Monaco', 42)
+        # score
+        font = pygame.font.SysFont('Monaco', 42)
 
-    score_img = font.render("Score: " + str(score), True, COLOR['WHITE'])
-    high_score_img = font.render(
-        "High Score: " + str(high_score), True, COLOR['WHITE'])
+        score_img = font.render("Score: " + str(self.score), True, COLOR['WHITE'])
+        high_score_img = font.render(
+            "High Score: " + str(self.high_score), True, COLOR['WHITE'])
 
-    (msg_width, _) = font.size("High Score: " + str(high_score))
-    window.blit(score_img, [0, 0])
-    window.blit(high_score_img, [WINDOW_WIDTH - msg_width, 0])
+        (msg_width, _) = font.size("High Score: " + str(self.high_score))
+        window.blit(score_img, [0, 0])
+        window.blit(high_score_img, [WINDOW_WIDTH - msg_width, 0])
 
 
 if __name__ == "__main__":
-    game_loop()
+    game = Game()
+    game.game_loop()
