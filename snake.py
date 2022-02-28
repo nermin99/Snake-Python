@@ -3,10 +3,8 @@ import random
 
 WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 600
-
 SQUARE_SIZE = 20
-
-GAME_SPEED = 15
+GAME_SPEED = 13
 
 # snake
 START_POS_X = 100
