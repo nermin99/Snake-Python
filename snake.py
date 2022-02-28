@@ -38,7 +38,7 @@ def to_px(tile_unit):
 
 
 class Apple:
-    def __init__(self, color):
+    def __init__(self, color=COLOR['RED']):
         self.color = color
         self.new_apple()
 
@@ -84,7 +84,7 @@ class Snake:
 class Game:
     def __init__(self):
         self.snake = Snake(to_px(START_X_POS), to_px(START_Y_POS), START_DX, START_DY, to_px(START_LENGTH))
-        self.apple = Apple(COLOR['RED'])
+        self.apple = Apple()
         self.score = 0
         self.high_score = 0
         self.game_over = False
