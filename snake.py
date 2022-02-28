@@ -45,13 +45,13 @@ class SnakeBit:
 
 
 class Snake:
-    def __init__(self, dx, dy, color, xPos, yPos, length):
+    def __init__(self, xPos, yPos, dx, dy, length, color):
         self.x = xPos
         self.y = yPos
         self.dx = dx
         self.dy = dy
-        self.color = color
         self.start_length = length
+        self.color = color
         self.snakebits = []
         self.spawn_tail()
 
@@ -60,8 +60,8 @@ class Snake:
             self.snakebits.append(SnakeBit(x, self.y))
 
     # Move by removing the tail and adding a new bit in front of the head
-    def move(self, apple_eaten):
-        if not apple_eaten:
+    def move(self, should_grow):
+        if not should_grow:
             del self.snakebits[-1]
 
         newX = self.snakebits[0].xPos + self.dx * SQUARE_SIZE
@@ -73,8 +73,8 @@ class Snake:
 
 class Game:
     def __init__(self):
-        self.snake = Snake(START_DX, START_DY, COLOR['GREEN'], START_POS_X,
-                        START_POS_Y, START_LENGTH*SQUARE_SIZE)
+        self.snake = Snake(START_POS_X, START_POS_Y, START_DX, START_DY,
+                    START_LENGTH*SQUARE_SIZE, COLOR['GREEN'])
         self.apple = Apple(COLOR['RED'])
         self.score = 0
         self.high_score = 0
@@ -84,10 +84,17 @@ class Game:
         while not self.game_over:
             self.update_direction()
 
-            self.is_tail_eaten()
+            if (self.is_tail_eaten()):
+                self.snake.snakebits.clear()
+                self.snake.spawn_tail()
+                self.score = 0
 
-            should_grow = self.is_apple_eaten()
-            self.snake.move(should_grow)
+            apple_eaten = self.is_apple_eaten()
+            if (apple_eaten):
+                self.apple.new_coordinates()
+                self.score += 1
+
+            self.snake.move(apple_eaten)
 
             self.high_score = self.score if self.score > self.high_score else self.high_score
 
@@ -134,19 +141,11 @@ class Game:
     def is_tail_eaten(self):
         for i in range(4, len(self.snake.snakebits)):
             if self.snake.x == self.snake.snakebits[i].xPos and self.snake.y == self.snake.snakebits[i].yPos:
-                self.snake.snakebits.clear()
-                self.snake.spawn_tail()
-                self.score = 0
                 return True
         return False
 
     def is_apple_eaten(self):
-        if self.snake.x == self.apple.x and self.snake.y == self.apple.y:
-            self.apple.new_coordinates()
-            self.score += 1
-            return True
-        else:
-            return False
+        return self.snake.x == self.apple.x and self.snake.y == self.apple.y
 
     def render(self):
         # background
