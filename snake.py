@@ -1,11 +1,12 @@
 import random
+import itertools
 import pygame
 
 NR_COLS = 10
 NR_ROWS = 9
-SQUARE_SIZE = 50
-WINDOW_WIDTH = SQUARE_SIZE * NR_COLS
-WINDOW_HEIGHT = SQUARE_SIZE * NR_ROWS
+TILE_SIZE = 50
+WINDOW_WIDTH = TILE_SIZE * NR_COLS
+WINDOW_HEIGHT = TILE_SIZE * NR_ROWS
 GAME_SPEED = 8
 
 # snake
@@ -19,7 +20,9 @@ COLOR = {
     'RED': (255, 0, 0),
     'GREEN': (0, 255, 0),
     'BLACK': (0, 0, 0),
-    'WHITE': (255, 255, 255)
+    'WHITE': (255, 255, 255),
+    'GREY1': (120, 120, 120),
+    'GREY2': (70, 70, 70)
 }
 
 pygame.init()
@@ -35,9 +38,9 @@ class Apple:
 
     def new_coordinates(self):
         self.x = round(random.randrange(
-            0, WINDOW_WIDTH - SQUARE_SIZE) / SQUARE_SIZE) * SQUARE_SIZE
+            0, WINDOW_WIDTH - TILE_SIZE) / TILE_SIZE) * TILE_SIZE
         self.y = round(random.randrange(
-            0, WINDOW_HEIGHT - SQUARE_SIZE) / SQUARE_SIZE) * SQUARE_SIZE
+            0, WINDOW_HEIGHT - TILE_SIZE) / TILE_SIZE) * TILE_SIZE
 
 
 class SnakeBit:
@@ -58,7 +61,7 @@ class Snake:
         self.spawn_tail()
 
     def spawn_tail(self):
-        for x in range(self.x, self.x + self.start_length, SQUARE_SIZE):
+        for x in range(self.x, self.x + self.start_length, TILE_SIZE):
             self.snakebits.append(SnakeBit(x, self.y))
 
     # Move by removing the tail and adding a new bit in front of the head
@@ -66,8 +69,8 @@ class Snake:
         if not should_grow:
             del self.snakebits[-1]
 
-        newX = self.snakebits[0].xPos + self.dx * SQUARE_SIZE
-        newY = self.snakebits[0].yPos + self.dy * SQUARE_SIZE
+        newX = self.snakebits[0].xPos + self.dx * TILE_SIZE
+        newY = self.snakebits[0].yPos + self.dy * TILE_SIZE
         self.snakebits.insert(0, SnakeBit(newX, newY))
         self.x = newX
         self.y = newY
@@ -76,7 +79,7 @@ class Snake:
 class Game:
     def __init__(self):
         self.snake = Snake(START_POS_X, START_POS_Y, START_DX, START_DY,
-                    START_LENGTH*SQUARE_SIZE, COLOR['GREEN'])
+                    START_LENGTH*TILE_SIZE, COLOR['GREEN'])
         self.apple = Apple(COLOR['RED'])
         self.score = 0
         self.high_score = 0
@@ -134,11 +137,11 @@ class Game:
         if (self.snake.snakebits[0].xPos >= WINDOW_WIDTH):
             self.snake.snakebits[0].xPos = 0
         if (self.snake.snakebits[0].xPos < 0):
-            self.snake.snakebits[0].xPos = WINDOW_WIDTH - SQUARE_SIZE
+            self.snake.snakebits[0].xPos = WINDOW_WIDTH - TILE_SIZE
         if (self.snake.snakebits[0].yPos >= WINDOW_HEIGHT):
             self.snake.snakebits[0].yPos = 0
         if (self.snake.snakebits[0].yPos < 0):
-            self.snake.snakebits[0].yPos = WINDOW_HEIGHT - SQUARE_SIZE
+            self.snake.snakebits[0].yPos = WINDOW_HEIGHT - TILE_SIZE
 
     def is_tail_eaten(self):
         for i in range(4, len(self.snake.snakebits)):
@@ -155,12 +158,12 @@ class Game:
 
         # apple
         pygame.draw.rect(window, self.apple.color, [
-                        self.apple.x, self.apple.y, SQUARE_SIZE, SQUARE_SIZE])
+                        self.apple.x, self.apple.y, TILE_SIZE, TILE_SIZE])
 
         # snake
         for i in range(0, len(self.snake.snakebits)):
             pygame.draw.rect(window, self.snake.color, [
-                self.snake.snakebits[i].xPos, self.snake.snakebits[i].yPos, SQUARE_SIZE, SQUARE_SIZE])
+                self.snake.snakebits[i].xPos, self.snake.snakebits[i].yPos, TILE_SIZE, TILE_SIZE])
 
         # score
         font = pygame.font.SysFont('Monaco', 42)
