@@ -11,5 +11,5 @@ python -m pip install -r requirements.txt
 ## Start
 
 ```
-python3 Game.py
+python3 Snake.py
 ```
