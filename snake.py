@@ -99,17 +99,17 @@ class Game:
         while not self.game_over:
             self.update_direction()
 
-            if (self.is_tail_eaten()):
-                self.snake.snakebits.clear()
-                self.snake.spawn()
-                self.score = 0
-
             apple_eaten = self.is_apple_eaten()
             if (apple_eaten):
                 self.apple.new_apple()
                 self.score += 1
 
             self.snake.move(apple_eaten)
+
+            if (self.did_loose()):
+                self.score = 0
+                self.snake.snakebits.clear()
+                self.snake.spawn()
 
             self.high_score = self.score if self.score > self.high_score else self.high_score
 
@@ -143,15 +143,18 @@ class Game:
                         self.snake.dx = 0
                         self.snake.dy = 1
 
-        # wrap snake on border
-        if (self.snake.snakebits[0].x >= WINDOW_WIDTH):
-            self.snake.snakebits[0].x = 0
-        if (self.snake.snakebits[0].x < 0):
-            self.snake.snakebits[0].x = WINDOW_WIDTH - TILE_SIZE
-        if (self.snake.snakebits[0].y >= WINDOW_HEIGHT):
-            self.snake.snakebits[0].y = 0
-        if (self.snake.snakebits[0].y < 0):
-            self.snake.snakebits[0].y = WINDOW_HEIGHT - TILE_SIZE
+
+    def is_apple_eaten(self):
+        head_x, head_y = self.snake.snakebits[0].x, self.snake.snakebits[0].y
+        return head_x == self.apple.x and head_y == self.apple.y
+
+    def did_loose(self):
+        if self.is_tail_eaten():
+            return True
+        elif self.did_hit_border():
+            return True
+        else:
+            return False
 
     def is_tail_eaten(self):
         head_x, head_y = self.snake.snakebits[0].x, self.snake.snakebits[0].y
@@ -160,9 +163,11 @@ class Game:
                 return True
         return False
 
-    def is_apple_eaten(self):
+    def did_hit_border(self):
         head_x, head_y = self.snake.snakebits[0].x, self.snake.snakebits[0].y
-        return head_x == self.apple.x and head_y == self.apple.y
+        if (head_x < 0) or (head_x >= WINDOW_WIDTH): return True
+        if (head_y < 0) or (head_y >= WINDOW_HEIGHT): return True
+        return False
 
     def render(self):
         # background (alternating tile colors)
