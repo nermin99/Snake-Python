@@ -5,7 +5,7 @@ import math
 import random
 import itertools
 
-NR_COLS = 10
+NR_COLS = 10 # Must be even
 NR_ROWS = 9
 TILE_SIZE = 55
 WINDOW_WIDTH = NR_COLS * TILE_SIZE
@@ -40,13 +40,20 @@ def to_px(tile_unit):
 
 
 class Apple:
-    def __init__(self, color=COLOR['RED']):
+    def __init__(self, snake, color=COLOR['RED']):
         self.color = color
-        self.new_apple()
+        self.new_apple(snake)
 
-    def new_apple(self):
-        self.x = to_px(random.randint(0,NR_COLS-1))
-        self.y = to_px(random.randint(0,NR_ROWS-1))
+    def new_apple(self, snake):
+        # keep computing random positions until one is found which doesn't intersect the snake.
+        while True:
+            x = to_px(random.randint(0,NR_COLS-1))
+            y = to_px(random.randint(0,NR_ROWS-1))
+            apple_rect = pygame.Rect(x, y, TILE_SIZE, TILE_SIZE)
+            if not any(apple_rect.collidepoint(pos.x, pos.y) for pos in snake.snakebits):
+                self.x = x
+                self.y = y
+                break
 
 
 class SnakeBit:
@@ -74,8 +81,8 @@ class Snake:
         for x_pos in range(START_HEAD_X - 1, -1, -1):
             self.snakebits.append(SnakeBit(to_px(x_pos), to_px(START_HEAD_Y)))
 
-    # Move by removing the tail and adding a new bit in front of the head
     def move(self, should_grow):
+        # Move by removing the tail and adding a new bit in front of the head
         if not should_grow:
             del self.snakebits[-1]
 
@@ -90,7 +97,7 @@ class Snake:
 class Game:
     def __init__(self):
         self.snake = Snake(to_px(START_HEAD_X), to_px(START_HEAD_Y), START_DX, START_DY, to_px(START_LENGTH))
-        self.apple = Apple()
+        self.apple = Apple(self.snake)
         self.score = 0
         self.high_score = 0
         self.game_over = False
@@ -101,7 +108,7 @@ class Game:
 
             apple_eaten = self.is_apple_eaten()
             if (apple_eaten):
-                self.apple.new_apple()
+                self.apple.new_apple(self.snake)
                 self.score += 1
 
             self.snake.move(apple_eaten)
